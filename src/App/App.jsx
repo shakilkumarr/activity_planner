@@ -1,14 +1,14 @@
-// App.js
 import React, { useState } from "react";
 
 import ParticipantInput from "../ParticipantInput";
 import ActivityList from "../ActivityList";
 import './App.css';
 
+const UNIQUE_RES_NEEDED = 5;
+
 const App = () => {
   const [participants, setParticipants] = useState([]);
   const [activities, setActivities] = useState([]);
-
 
   const fetchActivity = async (noOfParticipants) => {
     const activityInfo = await fetch(`https://www.boredapi.com/api/activity?participants=${noOfParticipants}`);
@@ -20,7 +20,7 @@ const App = () => {
     setParticipants(participantList);
     const intermediateActivityResponse = {};
     let i = 0;
-    while (i < 5) {
+    while (i < UNIQUE_RES_NEEDED) {
       try {
         const activityInfo = await fetchActivity(participantList.length);
         const activityKeyName = activityInfo.activity.split(" ").join("_");

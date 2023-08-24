@@ -1,57 +1,69 @@
-// ParticipantInput.js
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./ParticipantInput.css";
 
 const ParticipantInput = ({ onSubmit }) => {
   const [numberOfParticipants, setNumberOfParticipants] = useState("");
-  const [submitBtnStatus, setSubmitBtnStatus] = useState(true);
   const [isNameView, setNameView] = useState(false);
   const [participants, setParticipants] = useState({});
-
-  useEffect(() => {
-    if (!isNameView) return;
-    const length = Number(numberOfParticipants);
-    const rowsFilled = Object.values(participants).filter((name) => name && !!name.trim()).length;
-    const isValid = rowsFilled > 0 && rowsFilled === length;
-    setSubmitBtnStatus(!isValid);
-  }, [isNameView, participants, numberOfParticipants])
+  const [filledInputLength, setFilledInput] = useState(0);
+  const [filledInputTrack, setFilledInputTrack] = useState({});
 
   const handleParticipantChange = (event) => {
     const value = Number(event.target.value);
-    if (value >= 1 && value <= 5) {
-      setNumberOfParticipants(String(value));
-      setSubmitBtnStatus(false);
-    } else if (!value) {
-      setNumberOfParticipants("");
-      setSubmitBtnStatus(true);
+    if (value === 0 || (value >= 1 && value <= 5)) {
+      setNumberOfParticipants(event.target.value);
     }
   };
 
   const handleSubmit = () => {
-    setSubmitBtnStatus(true);
     if (isNameView) {
       onSubmit(Object.values(participants));
     } else {
       setNameView(true);
       const length = Number(numberOfParticipants);
       const initialParticipants = {};
+      const participantsValueTrack = {};
       for (let i = 0; i < length; i++) {
         initialParticipants[i] = '';
+        participantsValueTrack[i] = 1;
       }
+      setFilledInputTrack(participantsValueTrack);
       setParticipants(initialParticipants);
     }
   }
 
-  const handleNameChange = key => (ev) => {
+  const handleNameChange = (key) => (ev) => {
     const name = ev.target.value;
-    if ((name === "" || /^[A-Za-z ]+$/.test(name)) && !name.startsWith(" ")) {
-      setParticipants((prevParticipants) => ({
-        ...prevParticipants,
-        [key]: name,
-      }));
+    const isValidName = /^[A-Za-z ]+$/.test(name) && !name.startsWith(" ");
+    if (name !== "" && !isValidName) {
+      return;
     }
+    
+    setParticipants({
+      ...participants,
+      [key]: name,
+    });
+    updateFilledInputTrack(key, name);
   };
 
+  const updateFilledInputTrack = (key, name) => {
+    const isNewNameEmpty = !name;
+    const isInputFilledBefore = filledInputTrack[key] === 0;
+
+    if (isNewNameEmpty && isInputFilledBefore) {
+      setFilledInput(filledInputLength - 1);
+    } else if (!isNewNameEmpty && !isInputFilledBefore) {
+      setFilledInput(filledInputLength + 1);
+    }
+
+    setFilledInputTrack((prevFilledInputTrack) => ({
+      ...prevFilledInputTrack,
+      [key]: isNewNameEmpty ? 1 : 0,
+    }));
+  };
+  
+  const isSubmitBtnDisabled = isNameView ? filledInputLength !== Number(numberOfParticipants) : Number(numberOfParticipants) === 0;
+  
   return (
     <div className="participant-container">
       {
@@ -89,7 +101,7 @@ const ParticipantInput = ({ onSubmit }) => {
       <div className="footer">
         <button
           className="submit-button"
-          disabled={submitBtnStatus}
+          disabled={isSubmitBtnDisabled}
           onClick={handleSubmit}
         >Submit</button>
       </div>

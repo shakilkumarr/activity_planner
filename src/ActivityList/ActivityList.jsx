@@ -3,6 +3,7 @@ import "./ActivityList.css";
 
 const ActivityList = ({ activities, participants }) => {
   const sortedActivities = activities.sort((a, b) => b.price - a.price);
+  
   return (
     <div className="activity-container">
       <div>
@@ -23,6 +24,6 @@ const ActivityList = ({ activities, participants }) => {
       </div>
     </div>
   );
-}
+};
 
 export default ActivityList;
